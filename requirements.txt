@@ -1,0 +1,24 @@
+# Google API & Authentication
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+
+# Google Cloud AI (for summarization with Gemini/Vertex AI)
+google-cloud-aiplatform
+
+# For handling data and creating HTML tables
+pandas
+
+# For templating the email
+Jinja2
+
+# For fetching web articles
+requests
+beautifulsoup4
+
+# For fetching research papers from arXiv (a common source)
+arxiv
+PyPDF2
+
+# To manage environment variables (good practice for API keys)
+python-dotenv
