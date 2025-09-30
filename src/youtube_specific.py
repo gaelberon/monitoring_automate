@@ -167,12 +167,23 @@ def pull_new_videos_from_channel(youtube_service: str,
     #     print(f"Published at: {publish_date}\n")
     
     # First, get the channel's "uploads" playlist ID
-    channel_response = youtube_service.channels().list(
-        part = "contentDetails",
-        id = channel_id
-    ).execute()
+    try:
+        channel_response = youtube_service.channels().list(
+            part = "contentDetails",
+            id = channel_id
+        ).execute()
+    
+    except Exception as e:
+        print(f"🚨 An error occurred while processing an article!")
+        print(f"Error details: {e}")
+        # Optional: print the HTML snippet that caused the error to inspect it
+        # print(f"Problematic HTML: {insurance_times_uk_article_div}") 
+        return # Skip to the next article
 
-    uploads_playlist_id = channel_response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+    if channel_response and "items" in channel_response:
+        uploads_playlist_id = channel_response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+    else:
+        return
     
     # Initialize local variables
     playlist_response = None
@@ -335,18 +346,30 @@ def process_videos_from_channel(youtube_service: str,
         summarize_it (bool): Whether the summarizing function leveragin GenAI must be called or not.
     """
     
-    # Retrieve Youtube channel's videos 
-    channel_videos = pull_new_videos_from_channel(
-        youtube_service = youtube_service,
-        channel_id = channel_id,
-        channel_name = channel_name,
-        data_file_path = data_file_path)
+    # Retrieve Youtube channel's videos
+    try:
+        channel_videos = pull_new_videos_from_channel(
+            youtube_service = youtube_service,
+            channel_id = channel_id,
+            channel_name = channel_name,
+            data_file_path = data_file_path)
     
-    print(f"""
-    {datetime.now().strftime("%Y-%m-%d")} - {len(channel_videos)} new videos for Youtube channel '{channel_name}':""") # For Debug Only
-    print(f"""{''.join(f"""
-        => Video ID: {curr_video[config['key.json.id']]}
-           Title: {curr_video[config['key.json.title']]}""" for curr_video in channel_videos)}""") # For Debug Only
+    except Exception as e:
+        print(f"🚨 An error occurred while processing an article!")
+        print(f"Error details: {e}")
+        # Optional: print the HTML snippet that caused the error to inspect it
+        # print(f"Problematic HTML: {insurance_times_uk_article_div}") 
+        return # Skip to the next article
+    
+    if channel_videos:
+        print(f"""
+        {datetime.now().strftime("%Y-%m-%d")} - {len(channel_videos)} new videos for Youtube channel '{channel_name}':""") # For Debug Only
+        print(f"""{''.join(f"""
+            => Video ID: {curr_video[config['key.json.id']]}
+               Title: {curr_video[config['key.json.title']]}""" for curr_video in channel_videos)}""") # For Debug Only
+    else:
+        print(f"Channel '{channel_name}' has no video or doesn't exist. Please verify its id ('{channel_id}')")
+        return
     
     # Create email subject
     email_subject = f"{

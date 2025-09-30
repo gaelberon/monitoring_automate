@@ -500,88 +500,58 @@ def pull_new_insurance_times_uk_articles(domain_name: str,
         # print(f"Dealing with Insurance Times UK article of index #{len(my_resultset)-1-current_div_index}") # For Debug Only
         insurance_times_uk_article_div = my_resultset[len(my_resultset)-1-current_div_index]
         
-        # Extract title, URL, and check for duplicates
-        # <a href="https://www.insurancetimes.co.uk/news/intersys-opens-new-london-office/1453257.article">Intersys opens new London office</a>
-        title_tag = insurance_times_uk_article_div.find("a", class_ = "")
-        post_title = ""
-        if title_tag:
-            post_title = title_tag.text.strip()
-        else:
-            print("Title not found for an article in Insurance Times UK")
-            continue
-        # print(f"=> Insurance Times UK article title: {post_title}") # For Debug Only
-        
-        # Extract the paper ID from the link
-        article_url_match = re.search(r"^(https:\/\/www\.insurancetimes\.co\.uk\/.*)$", title_tag["href"])
-        if article_url_match:
-            article_url = article_url_match.group(1)
-        else:
-            print(f"Could not recognize Insurance Times UK URL from link: {title_tag['href']}")
-            continue
-        # print(f"=> Insurance Times UK article URL: {article_url}") # For Debug Only
-        
-        # Check for duplicates using Insurance Times UK article URL
-        if article_url in seen_urls:
-            # print(f"Duplicate article detected with URL {article_url}, skipping.") # For Debug Only
-            continue
-        seen_urls.add(article_url) # Add unique URL to seen URLs
-        
-        # Extract additional information (image URL, author, date)
-        # <img alt="Leadenhall market" class="lazyloaded" loading="lazy" sizes="(max-width: 1179px) 100px, 220px"
-        # src="https://d17mj6xr9uykrr.cloudfront.net/Pictures/100x67/6/9/7/111697_leadenhallmarket_502804.jpg"
-        # srcset="https://d17mj6xr9uykrr.cloudfront.net/Pictures/100x67/6/9/7/111697_leadenhallmarket_502804.jpg 100w,
-        # https://d17mj6xr9uykrr.cloudfront.net/Pictures/220x147/6/9/7/111697_leadenhallmarket_502804.jpg 220w" width="100" height="67" />
-        image_url = insurance_times_uk_article_div.find("img", class_="lazyloaded")
-        if image_url:
-            image_url = image_url['src']
-        else:
-            print(f"Could not recognize image URL: {image_url}")
-            # image_url = insurance_times_uk_article_div.find("img", class_="entry-thumb")
-            # if image_url:
-            #     image_url = image_url['src']
-            # else:
-            #     print(f"Could not recognize image URL: {image_url}")
-        # print(f"=> Insurance Times UK article image URL: {image_url}") # For Debug Only
-        # post_author = insurance_times_uk_article_div.find("a", rel_="author")
-        # if post_author:
-        #     post_author = post_author.text.replace("-","").strip()
-        # else:
-        #     print(f"Could not recognize post author.")
-        post_author = None
-        # Find the span element with class "author"
-        # <span class="author">By <a rel="author" href="https://www.insurancetimes.co.uk/clare-ruel/2216.bio">Clare Ruel</a></span>
-        author_span = insurance_times_uk_article_div.find("span", class_="author")
-        # Extract the text content from the anchor tag within the span
-        if author_span:  # Check if author_span is not None (element found)
-            post_author = author_span.find("a", class_ = "")
-            if post_author:
-                post_author = post_author.text.strip()
+        try:
+            # Extract title, URL, and check for duplicates
+            # <a href="https://www.insurancetimes.co.uk/news/intersys-opens-new-london-office/1453257.article">Intersys opens new London office</a>
+            title_tag = insurance_times_uk_article_div.find("a", class_ = "")
+            post_title = ""
+            if title_tag:
+                post_title = title_tag.text.strip()
             else:
-                # <span class="author">By <span class="noLink">Harry Weeks</span></span>
-                author_span = insurance_times_uk_article_div.find("span", class_="noLink")
-                post_author = author_span.text.strip()
-        else:
-            print("Could not recognize post author.")
-        # print(f"=> Insurance Times UK article author: {post_author}") # For Debug Only
-        
-        # Find the span element with class "author"
-        # <span class="date" data-date-timezone="{&quot;publishdate&quot;: &quot;2024-10-07T07:00:00&quot;}">2024-10-07T07:00:00+01:00</span>
-        post_date = insurance_times_uk_article_div.find("span", class_="date")
-        if post_date:
-            post_date = post_date.text.strip()
-        else:
-            print("Could not recognize post date.")
-        # print(f"=> Insurance Times UK article date: {post_date}") # For Debug Only
-        
-        # Extract article content
-        response_article = requests.get(article_url, headers = headers)
-        if response_article.status_code != 200:
-            print(f"Error: {response_article.status_code}")
-            response = None
-        soup_article = BeautifulSoup(response_article.content, "html.parser")
-        # print(f"Insurance Times UK article content: {soup_article}")
-        if not post_author:
-            author_span = soup_article.find("span", class_="author")
+                print("Title not found for an article in Insurance Times UK")
+                continue
+            # print(f"=> Insurance Times UK article title: {post_title}") # For Debug Only
+            
+            # Extract the paper ID from the link
+            article_url_match = re.search(r"^(https:\/\/www\.insurancetimes\.co\.uk\/.*)$", title_tag["href"])
+            if article_url_match:
+                article_url = article_url_match.group(1)
+            else:
+                print(f"Could not recognize Insurance Times UK URL from link: {title_tag['href']}")
+                continue
+            # print(f"=> Insurance Times UK article URL: {article_url}") # For Debug Only
+            
+            # Check for duplicates using Insurance Times UK article URL
+            if article_url in seen_urls:
+                # print(f"Duplicate article detected with URL {article_url}, skipping.") # For Debug Only
+                continue
+            seen_urls.add(article_url) # Add unique URL to seen URLs
+            
+            # Extract additional information (image URL, author, date)
+            # <img alt="Leadenhall market" class="lazyloaded" loading="lazy" sizes="(max-width: 1179px) 100px, 220px"
+            # src="https://d17mj6xr9uykrr.cloudfront.net/Pictures/100x67/6/9/7/111697_leadenhallmarket_502804.jpg"
+            # srcset="https://d17mj6xr9uykrr.cloudfront.net/Pictures/100x67/6/9/7/111697_leadenhallmarket_502804.jpg 100w,
+            # https://d17mj6xr9uykrr.cloudfront.net/Pictures/220x147/6/9/7/111697_leadenhallmarket_502804.jpg 220w" width="100" height="67" />
+            image_url = insurance_times_uk_article_div.find("img", class_="lazyloaded")
+            if image_url:
+                image_url = image_url['src']
+            else:
+                print(f"Could not recognize image URL: {image_url}")
+                # image_url = insurance_times_uk_article_div.find("img", class_="entry-thumb")
+                # if image_url:
+                #     image_url = image_url['src']
+                # else:
+                #     print(f"Could not recognize image URL: {image_url}")
+            # print(f"=> Insurance Times UK article image URL: {image_url}") # For Debug Only
+            # post_author = insurance_times_uk_article_div.find("a", rel_="author")
+            # if post_author:
+            #     post_author = post_author.text.replace("-","").strip()
+            # else:
+            #     print(f"Could not recognize post author.")
+            post_author = None
+            # Find the span element with class "author"
+            # <span class="author">By <a rel="author" href="https://www.insurancetimes.co.uk/clare-ruel/2216.bio">Clare Ruel</a></span>
+            author_span = insurance_times_uk_article_div.find("span", class_="author")
             # Extract the text content from the anchor tag within the span
             if author_span:  # Check if author_span is not None (element found)
                 post_author = author_span.find("a", class_ = "")
@@ -589,53 +559,91 @@ def pull_new_insurance_times_uk_articles(domain_name: str,
                     post_author = post_author.text.strip()
                 else:
                     # <span class="author">By <span class="noLink">Harry Weeks</span></span>
-                    author_span = soup_article.find("span", class_="noLink")
+                    author_span = insurance_times_uk_article_div.find("span", class_="noLink")
                     post_author = author_span.text.strip()
             else:
                 print("Could not recognize post author.")
             # print(f"=> Insurance Times UK article author: {post_author}") # For Debug Only
-        if not post_date:
-            post_date = soup_article.find("span", class_="date")
+            
+            # Find the span element with class "author"
+            # <span class="date" data-date-timezone="{&quot;publishdate&quot;: &quot;2024-10-07T07:00:00&quot;}">2024-10-07T07:00:00+01:00</span>
+            post_date = insurance_times_uk_article_div.find("span", class_="date")
             if post_date:
                 post_date = post_date.text.strip()
             else:
                 print("Could not recognize post date.")
             # print(f"=> Insurance Times UK article date: {post_date}") # For Debug Only
-        # Locate the relevant div element
-        # <div class="articleContent">
-        post_content_div = soup_article.find("div", class_="articleContent")
-        post_content = None
-        if not post_content_div:
-            print(f"Could not recognize post content for article at URL: {article_url}")
-        else:
-            # Find all paragraphs
-            paragraphs = post_content_div.find_all("p")
-            # for p in paragraphs:
-            #     print(f"{type(p)} 'p' content: {p}")
-            # Extract the text content from the paragraphs
-            post_content = "".join([p.text.strip() for p in paragraphs if p and not p.text.startswith("<p><strong>Read:") and not p.text.startswith("<p><strong>Explore")])
-            # print(f"'p' content: {paragraphs[0]}")
-            # Remove unexpected content
-            # Find all paragraphs that don't start with "<p><strong>Read:&nbsp;<a href="
-            # paragraphs = post_content_div.find_all(
-            #     "p",
-            #     # lambda p: ((p and not isinstance(p, str)) or (p and not p.startswith("<p><strong>Read:") and not p.startswith("<p><strong>Explore")))
-            #     lambda p: p and isinstance(p, str)
-            #     )
-            # Extract the text content from the paragraphs
-            # post_content = "".join([p.text.strip() for p in paragraphs])
-        # print(f"=> Insurance Times UK article content: {post_content}")
+            
+            # Extract article content
+            response_article = requests.get(article_url, headers = headers)
+            if response_article.status_code != 200:
+                print(f"Error: {response_article.status_code}")
+                response = None
+            soup_article = BeautifulSoup(response_article.content, "html.parser")
+            # print(f"Insurance Times UK article content: {soup_article}")
+            if not post_author:
+                author_span = soup_article.find("span", class_="author")
+                # Extract the text content from the anchor tag within the span
+                if author_span:  # Check if author_span is not None (element found)
+                    post_author = author_span.find("a", class_ = "")
+                    if post_author:
+                        post_author = post_author.text.strip()
+                    else:
+                        # <span class="author">By <span class="noLink">Harry Weeks</span></span>
+                        author_span = soup_article.find("span", class_="noLink")
+                        post_author = author_span.text.strip()
+                else:
+                    print("Could not recognize post author.")
+                # print(f"=> Insurance Times UK article author: {post_author}") # For Debug Only
+            if not post_date:
+                post_date = soup_article.find("span", class_="date")
+                if post_date:
+                    post_date = post_date.text.strip()
+                else:
+                    print("Could not recognize post date.")
+                # print(f"=> Insurance Times UK article date: {post_date}") # For Debug Only
+            # Locate the relevant div element
+            # <div class="articleContent">
+            post_content_div = soup_article.find("div", class_="articleContent")
+            post_content = None
+            if not post_content_div:
+                print(f"Could not recognize post content for article at URL: {article_url}")
+            else:
+                # Find all paragraphs
+                paragraphs = post_content_div.find_all("p")
+                # for p in paragraphs:
+                #     print(f"{type(p)} 'p' content: {p}")
+                # Extract the text content from the paragraphs
+                post_content = "".join([p.text.strip() for p in paragraphs if p and not p.text.startswith("<p><strong>Read:") and not p.text.startswith("<p><strong>Explore")])
+                # print(f"'p' content: {paragraphs[0]}")
+                # Remove unexpected content
+                # Find all paragraphs that don't start with "<p><strong>Read:&nbsp;<a href="
+                # paragraphs = post_content_div.find_all(
+                #     "p",
+                #     # lambda p: ((p and not isinstance(p, str)) or (p and not p.startswith("<p><strong>Read:") and not p.startswith("<p><strong>Explore")))
+                #     lambda p: p and isinstance(p, str)
+                #     )
+                # Extract the text content from the paragraphs
+                # post_content = "".join([p.text.strip() for p in paragraphs])
+            # print(f"=> Insurance Times UK article content: {post_content}")
+            
+            # Add article details to the list 'insurance_times_uk_articles'
+            insurance_times_uk_articles.insert(0, {
+                config["key.json.title"]: post_title,
+                config["key.json.author"]: post_author,
+                config["key.json.thumbnail.url"]: image_url,
+                config["key.json.date"]: post_date,
+                config["key.json.link"]: article_url,
+                config["key.json.content"]: post_content
+                })
         
-        # Add article details to the list 'insurance_times_uk_articles'
-        insurance_times_uk_articles.insert(0, {
-            config["key.json.title"]: post_title,
-            config["key.json.author"]: post_author,
-            config["key.json.thumbnail.url"]: image_url,
-            config["key.json.date"]: post_date,
-            config["key.json.link"]: article_url,
-            config["key.json.content"]: post_content
-            })
-        
+        except Exception as e:
+            print(f"🚨 An error occurred while processing an article!")
+            print(f"Error details: {e}")
+            # Optional: print the HTML snippet that caused the error to inspect it
+            # print(f"Problematic HTML: {insurance_times_uk_article_div}") 
+            continue # Skip to the next article
+    
     # Return the list of articles from Insurance Times UK website with extracted details
     return insurance_times_uk_articles
 
