@@ -1396,6 +1396,8 @@ def process_list_of_items(source_name: str,
             except Exception as e:
                 print(f"Failed to summarize content for the item '{item[config['key.json.title']]}' with both models.")
                 print(f"Due to {e}")
+                # If both models fail, set a specific message instead of None
+                summary = "ERROR: The summary could not be generated for this item."
         finally:
             if summary != None:
                 summary.replace("\n", " ")
